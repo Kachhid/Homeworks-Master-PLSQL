@@ -6,7 +6,7 @@
 -- Создание платежа
 declare
     v_message varchar2 (200 char) := 'Платеж создан';
-    c_status_create number := 0;
+    c_status_create number (10) := 0;
     v_dt_sys timestamp := systimestamp;
 begin
     dbms_output.put_line (v_message || '. Статус: ' || c_status_create);
