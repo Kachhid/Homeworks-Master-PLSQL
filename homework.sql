@@ -6,8 +6,8 @@
 -- Создание платежа
 declare
     v_message varchar2 (200 char) := 'Платеж создан.';
-    c_status_create constant number (10) := 0;
-    v_payment_id number (38);
+    c_status_create constant plsql14_student3.payment.status%type := 0;
+    v_payment_id plsql14_student3.payment.payment_id%type;
     v_dt_sys timestamp := systimestamp;
 begin
     dbms_output.put_line (v_message || ' Статус: ' || c_status_create || '. ID платежа: ' || to_char (v_payment_id));
@@ -19,9 +19,9 @@ end;
 -- Перевод платежа на статус "Ошибка"
 declare
     v_message varchar2 (200 char) := 'Сброс платежа в "ошибочный статус" с указанием причины.';
-    v_reason varchar2 (200 char) :=  'Недостаточно средств.';
-    c_status_error constant number (10) := 2;
-    v_payment_id number (38);
+    v_reason plsql14_student3.payment.status_change_reason%type :=  'Недостаточно средств.';
+    c_status_error constant plsql14_student3.payment.status%type := 2;
+    v_payment_id plsql14_student3.payment.payment_id%type;
     v_ts_sys timestamp := systimestamp;
 begin
     if v_payment_id is null then
@@ -39,9 +39,9 @@ end;
 -- Перевод платежа на статус "Отмена"
 declare
     v_message varchar2 (200 char) := 'Отмена платежа с указанием причины.';
-    v_reason varchar2 (200 char) :=  'Ошибка пользователя.';
-    c_status_cancel constant number (10) := 3;
-    v_payment_id number (38) := 1;
+    v_reason plsql14_student3.payment.status_change_reason%type :=  'Ошибка пользователя.';
+    c_status_cancel constant plsql14_student3.payment.status%type := 3;
+    v_payment_id plsql14_student3.payment.payment_id%type := 1;
     v_ts_sys timestamp := systimestamp;
 begin
     if v_payment_id is null then
@@ -59,8 +59,8 @@ end;
 -- Перевод платежа на статус "Успешно"
 declare
     v_message varchar2 (200 char) := 'Успешное завершение платежа.';
-    c_status_success constant number (10) := 1;
-    v_payment_id number (38) := 100;
+    c_status_success constant plsql14_student3.payment.status%type := 1;
+    v_payment_id plsql14_student3.payment.payment_id%type := 100;
     v_ts_sys timestamp := systimestamp;
 begin
     if v_payment_id is null then
@@ -75,7 +75,7 @@ end;
 -- Обновление деталей платежа
 declare
     v_message varchar2 (200 char) := 'Данные платежа добавлены или обновлены по списку id_поля/значение.';
-    v_payment_id number (38);
+    v_payment_id plsql14_student3.payment.payment_id%type;
     v_dt_sys date := sysdate;
 begin
     if v_payment_id is null then
@@ -90,7 +90,7 @@ end;
 -- Удаление деталей платежа
 declare
     v_message varchar2 (200 char) := 'Детали платежа удалены по списку id_полей.';
-    v_payment_id number (38) := 3;
+    v_payment_id plsql14_student3.payment.payment_id%type := 3;
     v_dt_sys date := sysdate;
 begin
     if v_payment_id is null then
