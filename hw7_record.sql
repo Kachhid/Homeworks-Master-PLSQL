@@ -23,6 +23,7 @@ begin
         else dbms_output.put_line ('It’s not null');
     end case;
 end;
+/
 
 declare
     r_payment_detail_field payment_detail_field%rowtype;
@@ -36,3 +37,4 @@ begin
     dbms_output.put_line ('r_payment_detail_field.name - ' || r_payment_detail_field.name);
     dbms_output.put_line ('r_payment_detail_field.description - ' || r_payment_detail_field.description);
 end;
+/
