@@ -167,7 +167,7 @@ begin
         and p.status = c_status_create;
 
     if sql%rowcount = 0 then
-        dbms_output.put_line ('Отмена платежа невозможна. Текущий статус платежа не "Создан".');
+        dbms_output.put_line ('Успешное завершение платежа невозможно. Текущий статус платежа не "Создан".');
     end if;
 
     commit;
@@ -242,8 +242,10 @@ end;
 -- Удаление деталей платежа
 declare
     v_message varchar2 (200 char) := 'Детали платежа удалены по списку id_полей.';
+
     v_payment_id payment.payment_id%type := 3;
     v_ts_sys timestamp := systimestamp;
+
     v_payment_detail_field_ids t_number_array := t_number_array (3, 44, 127);
 begin
     if v_payment_id is null then
@@ -263,8 +265,8 @@ begin
 
     delete from payment_detail pd
     where
-        pd.PAYMENT_ID = v_payment_id
-        and pd.FIELD_ID in
+        pd.payment_id = v_payment_id
+        and pd.field_id in
             (select t.column_value as field_id
             from table (v_payment_detail_field_ids) t);
 
