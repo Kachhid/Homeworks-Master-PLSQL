@@ -13,6 +13,21 @@ declare
         t_payment_detail (2, '127.0.0.1'));
     v_dt_sys timestamp := systimestamp;
 begin
+    if v_payment_detail is not empty then
+        for i in v_payment_detail.first .. v_payment_detail.last
+        loop
+            if v_payment_detail(i).field_id is null then
+                dbms_output.put_line ('ID поля не может быть пустым.');
+            end if;
+            if v_payment_detail(i).field_value is null then
+                dbms_output.put_line ('Значение в поле не может быть пустым.');
+            end if;
+            dbms_output.put_line ('Field_id: ' || v_payment_detail(i).field_id || '. Field_value: ' || v_payment_detail(i).field_value);
+        end loop;
+    else
+        dbms_output.put_line ('Коллекция не содержит данных.');
+    end if;
+
     dbms_output.put_line (v_message || ' Статус: ' || c_status_create || '. ID платежа: ' || to_char (v_payment_id));
     dbms_output.put_line (to_char (v_dt_sys, 'fmDay, Month dd, yyyy'));
     dbms_output.put_line (null);
@@ -86,6 +101,21 @@ declare
         t_payment_detail (3, 'Премия за работу.'),
         t_payment_detail (4, 'Yes'));
 begin
+    if v_payment_detail is not empty then
+        for i in v_payment_detail.first .. v_payment_detail.last
+        loop
+            if v_payment_detail(i).field_id is null then
+                dbms_output.put_line ('ID поля не может быть пустым.');
+            end if;
+            if v_payment_detail(i).field_value is null then
+                dbms_output.put_line ('Значение в поле не может быть пустым.');
+            end if;
+            dbms_output.put_line ('Field_id: ' || v_payment_detail(i).field_id || '. Field_value: ' || v_payment_detail(i).field_value);
+        end loop;
+    else
+        dbms_output.put_line ('Коллекция не содержит данных.');
+    end if;
+
     if v_payment_id is null then
         dbms_output.put_line ('ID платежа не может быть пустым.');
     end if;
@@ -102,10 +132,20 @@ declare
     v_dt_sys date := sysdate;
     v_payment_ids t_number_array := t_number_array (3, 44, 127);
 begin
+    if v_payment_ids is not empty then
+        for i in v_payment_ids.first .. v_payment_ids.last
+        loop
+            if v_payment_ids(i) is null then
+                dbms_output.put_line ('ID поля не может быть пустым.');
+            end if;
+        end loop;
+    else
+        dbms_output.put_line ('Коллекция не содержит данных.');
+    end if;
     if v_payment_id is null then
         dbms_output.put_line ('ID платежа не может быть пустым.');
     end if;
-    dbms_output.put_line (v_message || ' ID платежа: ' || to_char (v_payment_id));
+    dbms_output.put_line (v_message || ' ID платежа: ' || to_char (v_payment_id) || '. Количество удаляемых полей: ' || to_char (v_payment_ids.count()));
     dbms_output.put_line ('Текущий день: ' || trim (to_char (v_dt_sys, 'DAY')) || ' of ' || trim (to_char (v_dt_sys, 'MONTH')) || '.' || to_char (v_dt_sys, 'YY'));
     dbms_output.put_line (null);
 end;
