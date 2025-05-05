@@ -132,6 +132,16 @@ declare
     v_dt_sys date := sysdate;
     v_payment_ids t_number_array := t_number_array (3, 44, 127);
 begin
+    if v_payment_ids is not empty then
+        for i in v_payment_ids.first .. v_payment_ids.last
+        loop
+            if v_payment_ids(i) is null then
+                dbms_output.put_line ('ID поля не может быть пустым.');
+            end if;
+        end loop;
+    else
+        dbms_output.put_line ('Коллекция не содержит данных.');
+    end if;
     if v_payment_id is null then
         dbms_output.put_line ('ID платежа не может быть пустым.');
     end if;
