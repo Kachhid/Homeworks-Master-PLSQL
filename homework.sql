@@ -63,8 +63,6 @@ begin
         field_value
     from table (v_payment_detail);
 
-    commit;
-
     dbms_output.put_line (v_message || ' Статус: ' || c_status_create || '. ID платежа: ' || to_char (v_payment_id) || '. Дата создания платежа: ' || to_char (v_create_dtime, 'dd.mm.yy hh24:mi:ss.ff6'));
     dbms_output.put_line (null);
 end;
@@ -99,8 +97,6 @@ begin
     if sql%rowcount = 0 then
         dbms_output.put_line ('Сброс платежа в "ошибочный статус" невозможен. Текущий статус платежа не "Создан".');
     end if;
-
-    commit;
 
     dbms_output.put_line (v_message || ' Статус: ' || c_status_error || '. Причина: ' || v_reason || ' ID платежа: ' || to_char (v_payment_id) || '. Выполнено в: ' || to_char (v_ts_sys, 'dd.mm.yy hh24:mi:ss.ff6'));
     dbms_output.put_line (null);
@@ -137,8 +133,6 @@ begin
         dbms_output.put_line ('Отмена платежа невозможна. Текущий статус платежа не "Создан".');
     end if;
 
-    commit;
-
     dbms_output.put_line (v_message || ' Статус: ' || to_char (c_status_cancel) || '. Причина: ' || v_reason || ' ID платежа: ' || to_char (v_payment_id) || '. Выполнено в: ' || to_char (v_ts_sys, 'dd.mm.yy hh24:mi:ss.ff6'));
     dbms_output.put_line (null);
 end;
@@ -169,8 +163,6 @@ begin
     if sql%rowcount = 0 then
         dbms_output.put_line ('Успешное завершение платежа невозможно. Текущий статус платежа не "Создан".');
     end if;
-
-    commit;
 
     dbms_output.put_line (v_message || ' Статус: ' || to_char (c_status_success) || '. ID платежа: ' || to_char (v_payment_id) || '. Выполнено в: ' || to_char (v_ts_sys, 'dd.mm.yy hh24:mi:ss.ff6'));
     dbms_output.put_line (null);
@@ -232,8 +224,6 @@ begin
             t.field_id,
             t.field_value);
 
-    commit;
-
     dbms_output.put_line (v_message || ' ID платежа: ' || to_char (v_payment_id)|| '. Выполнено в: ' || to_char (v_ts_sys, 'dd.mm.yy hh24:mi:ss.ff6'));
     dbms_output.put_line (null);
 end;
@@ -269,8 +259,6 @@ begin
         and pd.field_id in
             (select t.column_value as field_id
             from table (v_payment_detail_field_ids) t);
-
-    commit;
 
     dbms_output.put_line (v_message || ' ID платежа: ' || to_char (v_payment_id) || '. Количество удаляемых полей: ' || to_char (v_payment_detail_field_ids.count()) || '. Выполнено в: ' || to_char (v_ts_sys, 'dd.mm.yy hh24:mi:ss.ff6'));
     dbms_output.put_line (null);
