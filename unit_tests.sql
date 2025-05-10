@@ -1,8 +1,8 @@
-/*==============================================================================
-Тест "Создание платежа" (create_payment)
+п»ї/*==============================================================================
+РўРµСЃС‚ "РЎРѕР·РґР°РЅРёРµ РїР»Р°С‚РµР¶Р°" (create_payment)
 ==============================================================================*/
 
--- успех
+-- СѓСЃРїРµС…
 declare
     v_payment t_payment := t_payment (systimestamp, 100, 643, 1, 2);
     v_payment_detail t_payment_detail_array := t_payment_detail_array
@@ -40,25 +40,25 @@ begin
 end;
 
 /*==============================================================================
-Тест "Перевод платежа на статус "Ошибка"" (fail_payment)
+РўРµСЃС‚ "РџРµСЂРµРІРѕРґ РїР»Р°С‚РµР¶Р° РЅР° СЃС‚Р°С‚СѓСЃ "РћС€РёР±РєР°"" (fail_payment)
 ==============================================================================*/
 begin
-    fail_payment (p_payment_id => 22, p_reason => 'Недостаточно средств.');
-    fail_payment (p_payment_id => null, p_reason => 'Недостаточно средств.');
+    fail_payment (p_payment_id => 22, p_reason => 'РќРµРґРѕСЃС‚Р°С‚РѕС‡РЅРѕ СЃСЂРµРґСЃС‚РІ.');
+    fail_payment (p_payment_id => null, p_reason => 'РќРµРґРѕСЃС‚Р°С‚РѕС‡РЅРѕ СЃСЂРµРґСЃС‚РІ.');
     fail_payment (p_payment_id => null, p_reason => null);
 end;
 
 /*==============================================================================
-Тест "Перевод платежа на статус "Отмена"" (cancel_payment)
+РўРµСЃС‚ "РџРµСЂРµРІРѕРґ РїР»Р°С‚РµР¶Р° РЅР° СЃС‚Р°С‚СѓСЃ "РћС‚РјРµРЅР°"" (cancel_payment)
 ==============================================================================*/
 begin
-    fail_payment (p_payment_id => 1, p_reason => 'Ошибка пользователя.');
+    fail_payment (p_payment_id => 1, p_reason => 'РћС€РёР±РєР° РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ.');
     fail_payment (p_payment_id => 2, p_reason => null);
-    fail_payment (p_payment_id => null, p_reason => 'Ошибка пользователя.');
+    fail_payment (p_payment_id => null, p_reason => 'РћС€РёР±РєР° РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ.');
 end;
 
 /*==============================================================================
-Тест "Перевод платежа на статус "Успешно"" (successful_finish_payment)
+РўРµСЃС‚ "РџРµСЂРµРІРѕРґ РїР»Р°С‚РµР¶Р° РЅР° СЃС‚Р°С‚СѓСЃ "РЈСЃРїРµС€РЅРѕ"" (successful_finish_payment)
 ==============================================================================*/
 begin
     successful_finish_payment (p_payment_id => 3);
@@ -67,16 +67,16 @@ begin
 end;
 
 /*==============================================================================
-Тест "Обновление деталей платежа" (insert_or_update_payment_detail)
+РўРµСЃС‚ "РћР±РЅРѕРІР»РµРЅРёРµ РґРµС‚Р°Р»РµР№ РїР»Р°С‚РµР¶Р°" (insert_or_update_payment_detail)
 ==============================================================================*/
 
--- успех
+-- СѓСЃРїРµС…
 declare
     v_payment_id payment.payment_id%type := 5;
     v_payment_detail t_payment_detail_array := t_payment_detail_array
         (t_payment_detail (1, 'Android'),
         t_payment_detail (2, '8.8.8.8'),
-        t_payment_detail (3, 'Премия за работу.'),
+        t_payment_detail (3, 'РџСЂРµРјРёСЏ Р·Р° СЂР°Р±РѕС‚Сѓ.'),
         t_payment_detail (4, 'Yes'));
 begin
     insert_or_update_payment_detail (p_payment_id => v_payment_id, p_payment_detail => v_payment_detail);
@@ -96,17 +96,17 @@ declare
     v_payment_detail t_payment_detail_array := t_payment_detail_array
         (t_payment_detail (1, 'Android'),
         t_payment_detail (2, '8.8.8.8'),
-        t_payment_detail (3, 'Премия за работу.'),
+        t_payment_detail (3, 'РџСЂРµРјРёСЏ Р·Р° СЂР°Р±РѕС‚Сѓ.'),
         t_payment_detail (4, 'Yes'));
 begin
     insert_or_update_payment_detail (p_payment_id => v_payment_id, p_payment_detail => v_payment_detail);
 end;
 
 /*==============================================================================
-Тест "Удаление деталей платежа" (delete_payment_detail)
+РўРµСЃС‚ "РЈРґР°Р»РµРЅРёРµ РґРµС‚Р°Р»РµР№ РїР»Р°С‚РµР¶Р°" (delete_payment_detail)
 ==============================================================================*/
 
--- успех
+-- СѓСЃРїРµС…
 declare
     v_payment_id payment.payment_id%type := 1;
     v_payment_detail_field_ids t_number_array := t_number_array (3, 44, 127);
