@@ -3,33 +3,52 @@
 Описание скрипта: API для сущностей “Платеж” и “Детали платежа”
 ==============================================================================*/
 
--- Создание платежа
-declare
+create or replace function create_payment
+    (p_payment in t_payment,
+    p_payment_detail in t_payment_detail_array)
+return payment.payment_id%type
+/*==============================================================================
+Purpose: Создание платежа
+Autor: Shatalin A.A.
+Parameter:
+Return: id платежа
+Note:
+Fix:
+==============================================================================*/
+
+is
     v_message varchar2 (200 char) := 'Платеж создан.';
 
     c_status_create constant payment.status%type := 0;
 
     v_payment_id payment.payment_id%type;
-    v_create_dtime timestamp := systimestamp;
-    v_summa payment.summa%type := 100;
-    v_currency_id payment.currency_id%type := 643;
-    v_from_client_id payment.from_client_id%type := 1;
-    v_to_client_id payment.to_client_id%type := 2;
-
-    v_payment_detail t_payment_detail_array := t_payment_detail_array
-        (t_payment_detail (1, 'Google Chrome'),
-        t_payment_detail (2, '127.0.0.1'));
 begin
-    if v_payment_detail is not empty then
-        for i in v_payment_detail.first .. v_payment_detail.last
+    if p_payment.create_dtime is null then
+        dbms_output.put_line ('Поле create_dtime не может быть пустым.');
+    end if;
+    if p_payment.summa is null then
+        dbms_output.put_line ('Поле summa не может быть пустым.');
+    end if;
+    if p_payment.currency_id is null then
+        dbms_output.put_line ('Поле currency_id не может быть пустым.');
+    end if;
+    if p_payment.from_client_id is null then
+        dbms_output.put_line ('Поле from_client_id не может быть пустым.');
+    end if;
+    if p_payment.to_client_id is null then
+        dbms_output.put_line ('Поле to_client_id не может быть пустым.');
+    end if;
+
+    if p_payment_detail is not empty then
+        for i in p_payment_detail.first .. p_payment_detail.last
         loop
-            if v_payment_detail(i).field_id is null then
+            if p_payment_detail(i).field_id is null then
                 dbms_output.put_line ('ID поля не может быть пустым.');
             end if;
-            if v_payment_detail(i).field_value is null then
+            if p_payment_detail(i).field_value is null then
                 dbms_output.put_line ('Значение в поле не может быть пустым.');
             end if;
-            dbms_output.put_line ('Field_id: ' || v_payment_detail(i).field_id || '. Field_value: ' || v_payment_detail(i).field_value);
+            dbms_output.put_line ('Field_id: ' || p_payment_detail(i).field_id || '. Field_value: ' || p_payment_detail(i).field_value);
         end loop;
     else
         dbms_output.put_line ('Коллекция не содержит данных.');
@@ -45,11 +64,11 @@ begin
         status) 
     values
         (payment_seq.nextval,
-        v_create_dtime,
-        v_summa,
-        v_currency_id,
-        v_from_client_id,
-        v_to_client_id,
+        p_payment.create_dtime,
+        p_payment.summa,
+        p_payment.currency_id,
+        p_payment.from_client_id,
+        p_payment.to_client_id,
         c_status_create)
     returning payment_id into v_payment_id;
 
@@ -61,94 +80,119 @@ begin
         v_payment_id,
         field_id,
         field_value
-    from table (v_payment_detail);
+    from table (p_payment_detail);
 
-    dbms_output.put_line (v_message || ' Статус: ' || c_status_create || '. ID платежа: ' || to_char (v_payment_id) || '. Дата создания платежа: ' || to_char (v_create_dtime, 'dd.mm.yy hh24:mi:ss.ff6'));
+    dbms_output.put_line (v_message || ' Статус: ' || c_status_create || '. ID платежа: ' || to_char (v_payment_id) || '. Дата создания платежа: ' || to_char (systimestamp, 'dd.mm.yy hh24:mi:ss.ff6'));
     dbms_output.put_line (null);
-end;
+
+    return v_payment_id;
+end create_payment;
 /
 
--- Перевод платежа на статус "Ошибка"
-declare
+create or replace procedure fail_payment
+    (p_payment_id in payment.payment_id%type,
+    p_reason in payment.status_change_reason%type)
+/*==============================================================================
+Purpose: Перевод платежа на статус "Ошибка".
+Autor: Shatalin A.A.
+Parameter:
+    p_payment_id - id платежа;
+    p_reason - причина ошибки платежа;
+Return:
+Note:
+Fix:
+==============================================================================*/
+is
     v_message varchar2 (200 char) := 'Сброс платежа в "ошибочный статус" с указанием причины.';
-    v_reason payment.status_change_reason%type :=  'Недостаточно средств.';
 
     c_status_create constant payment.status%type := 0;
     c_status_error constant payment.status%type := 2;
-
-    v_payment_id payment.payment_id%type;
-    v_ts_sys timestamp := systimestamp;
 begin
-    if v_payment_id is null then
+    if p_payment_id is null then
         dbms_output.put_line ('ID платежа не может быть пустым.');
     end if;
-    if v_reason is null then
+    if p_reason is null then
         dbms_output.put_line ('Причина не может быть пустой.');
     end if;
 
     update payment p
     set
         p.status = c_status_error,
-        p.status_change_reason = v_reason
+        p.status_change_reason = p_reason
     where
-        p.payment_id = v_payment_id
+        p.payment_id = p_payment_id
         and p.status = c_status_create;
 
     if sql%rowcount = 0 then
         dbms_output.put_line ('Сброс платежа в "ошибочный статус" невозможен. Текущий статус платежа не "Создан".');
     end if;
 
-    dbms_output.put_line (v_message || ' Статус: ' || c_status_error || '. Причина: ' || v_reason || ' ID платежа: ' || to_char (v_payment_id) || '. Выполнено в: ' || to_char (v_ts_sys, 'dd.mm.yy hh24:mi:ss.ff6'));
+    dbms_output.put_line (v_message || ' Статус: ' || c_status_error || '. Причина: ' || p_reason || ' ID платежа: ' || to_char (p_payment_id) || '. Выполнено в: ' || to_char (systimestamp, 'dd.mm.yy hh24:mi:ss.ff6'));
     dbms_output.put_line (null);
-end;
+end fail_payment;
 /
 
--- Перевод платежа на статус "Отмена"
-declare
+create or replace procedure cancel_payment
+    (p_payment_id in payment.payment_id%type,
+    p_reason in payment.status_change_reason%type)
+/*==============================================================================
+Purpose: Перевод платежа на статус "Отмена".
+Autor: Shatalin A.A.
+Parameter:
+    p_payment_id - id платежа;
+    p_reason - причина отмены платежа;
+Return:
+Note:
+Fix:
+==============================================================================*/
+is
     v_message varchar2 (200 char) := 'Отмена платежа с указанием причины.';
-    v_reason payment.status_change_reason%type :=  'Ошибка пользователя.';
 
     c_status_create constant payment.status%type := 0;
     c_status_cancel constant payment.status%type := 3;
-
-    v_payment_id payment.payment_id%type := 1;
-    v_ts_sys timestamp := systimestamp;
 begin
-    if v_payment_id is null then
+    if p_payment_id is null then
         dbms_output.put_line ('ID платежа не может быть пустым.');
     end if;
-    if v_reason is null then
+    if p_reason is null then
         dbms_output.put_line ('Причина не может быть пустой.');
     end if;
 
     update payment p
     set
         p.status = c_status_cancel,
-        p.status_change_reason = v_reason
+        p.status_change_reason = p_reason
     where
-        p.payment_id = v_payment_id
+        p.payment_id = p_payment_id
         and p.status = c_status_create;
 
     if sql%rowcount = 0 then
         dbms_output.put_line ('Отмена платежа невозможна. Текущий статус платежа не "Создан".');
     end if;
 
-    dbms_output.put_line (v_message || ' Статус: ' || to_char (c_status_cancel) || '. Причина: ' || v_reason || ' ID платежа: ' || to_char (v_payment_id) || '. Выполнено в: ' || to_char (v_ts_sys, 'dd.mm.yy hh24:mi:ss.ff6'));
+    dbms_output.put_line (v_message || ' Статус: ' || to_char (c_status_cancel) || '. Причина: ' || p_reason || ' ID платежа: ' || to_char (p_payment_id) || '. Выполнено в: ' || to_char (systimestamp, 'dd.mm.yy hh24:mi:ss.ff6'));
     dbms_output.put_line (null);
-end;
+end cancel_payment;
 /
 
--- Перевод платежа на статус "Успешно"
-declare
+create or replace procedure successful_finish_payment
+    (p_payment_id in payment.payment_id%type)
+/*==============================================================================
+Purpose: Перевод платежа на статус "Успешно".
+Autor: Shatalin A.A.
+Parameter:
+    p_payment_id - id платежа;
+Return:
+Note:
+Fix:
+==============================================================================*/
+is
     v_message varchar2 (200 char) := 'Успешное завершение платежа.';
 
     c_status_create constant payment.status%type := 0;
     c_status_success constant payment.status%type := 1;
-
-    v_payment_id payment.payment_id%type := 100;
-    v_ts_sys timestamp := systimestamp;
 begin
-    if v_payment_id is null then
+    if p_payment_id is null then
         dbms_output.put_line ('ID платежа не может быть пустым.');
     end if;
 
@@ -157,45 +201,48 @@ begin
         p.status = c_status_success,
         p.status_change_reason = null
     where
-        p.payment_id = v_payment_id
+        p.payment_id = p_payment_id
         and p.status = c_status_create;
 
     if sql%rowcount = 0 then
         dbms_output.put_line ('Успешное завершение платежа невозможно. Текущий статус платежа не "Создан".');
     end if;
 
-    dbms_output.put_line (v_message || ' Статус: ' || to_char (c_status_success) || '. ID платежа: ' || to_char (v_payment_id) || '. Выполнено в: ' || to_char (v_ts_sys, 'dd.mm.yy hh24:mi:ss.ff6'));
+    dbms_output.put_line (v_message || ' Статус: ' || to_char (c_status_success) || '. ID платежа: ' || to_char (p_payment_id) || '. Выполнено в: ' || to_char (systimestamp, 'dd.mm.yy hh24:mi:ss.ff6'));
     dbms_output.put_line (null);
-end;
+end successful_finish_payment;
 /
 
--- Обновление деталей платежа
-declare
+create or replace procedure insert_or_update_payment_detail
+    (p_payment_id in payment.payment_id%type,
+    p_payment_detail in t_payment_detail_array)
+/*==============================================================================
+Purpose: Обновление деталей платежа.
+Autor: Shatalin A.A.
+Parameter:
+    p_payment_id - id платежа;
+    p_payment_detail - детади платежа;
+Return:
+Note:
+Fix:
+==============================================================================*/
+is
     v_message varchar2 (200 char) := 'Данные платежа добавлены или обновлены по списку id_поля/значение.';
-
-    v_payment_id payment.payment_id%type := 3;
-    v_ts_sys timestamp := systimestamp;
-
-    v_payment_detail t_payment_detail_array := t_payment_detail_array
-        (t_payment_detail (1, 'Android'),
-        t_payment_detail (2, '8.8.8.8'),
-        t_payment_detail (3, 'Премия за работу.'),
-        t_payment_detail (4, 'Yes'));
 begin
-    if v_payment_id is null then
+    if p_payment_id is null then
         dbms_output.put_line ('ID платежа не может быть пустым.');
     end if;
 
-    if v_payment_detail is not empty then
-        for i in v_payment_detail.first .. v_payment_detail.last
+    if p_payment_detail is not empty then
+        for i in p_payment_detail.first .. p_payment_detail.last
         loop
-            if v_payment_detail(i).field_id is null then
+            if p_payment_detail(i).field_id is null then
                 dbms_output.put_line ('ID поля не может быть пустым.');
             end if;
-            if v_payment_detail(i).field_value is null then
+            if p_payment_detail(i).field_value is null then
                 dbms_output.put_line ('Значение в поле не может быть пустым.');
             end if;
-            dbms_output.put_line ('Field_id: ' || v_payment_detail(i).field_id || '. Field_value: ' || v_payment_detail(i).field_value);
+            dbms_output.put_line ('Field_id: ' || p_payment_detail(i).field_id || '. Field_value: ' || p_payment_detail(i).field_value);
         end loop;
     else
         dbms_output.put_line ('Коллекция не содержит данных.');
@@ -204,10 +251,10 @@ begin
     merge into payment_detail pd
     using
         (select
-            v_payment_id as payment_id,
+            p_payment_id as payment_id,
             value(t).field_id as field_id,
             value(t).field_value as field_value
-        from table (v_payment_detail) t) t
+        from table (p_payment_detail) t) t
     on
         (pd.payment_id = t.payment_id
         and pd.field_id = t.field_id)
@@ -224,28 +271,35 @@ begin
             t.field_id,
             t.field_value);
 
-    dbms_output.put_line (v_message || ' ID платежа: ' || to_char (v_payment_id)|| '. Выполнено в: ' || to_char (v_ts_sys, 'dd.mm.yy hh24:mi:ss.ff6'));
+    dbms_output.put_line (v_message || ' ID платежа: ' || to_char (p_payment_id)|| '. Выполнено в: ' || to_char (systimestamp, 'dd.mm.yy hh24:mi:ss.ff6'));
     dbms_output.put_line (null);
-end;
+end insert_or_update_payment_detail;
 /
 
--- Удаление деталей платежа
-declare
+create or replace procedure delete_payment_detail
+    (p_payment_id in payment.payment_id%type,
+    p_payment_detail_field_ids in t_number_array)
+/*==============================================================================
+Purpose: Удаление деталей платежа.
+Autor: Shatalin A.A.
+Parameter:
+    p_payment_id - id платежа;
+    p_payment_detail_field_ids - id деталей платежа;
+Return:
+Note:
+Fix:
+==============================================================================*/
+is
     v_message varchar2 (200 char) := 'Детали платежа удалены по списку id_полей.';
-
-    v_payment_id payment.payment_id%type := 3;
-    v_ts_sys timestamp := systimestamp;
-
-    v_payment_detail_field_ids t_number_array := t_number_array (3, 44, 127);
 begin
-    if v_payment_id is null then
+    if p_payment_id is null then
         dbms_output.put_line ('ID платежа не может быть пустым.');
     end if;
 
-    if v_payment_detail_field_ids is not empty then
-        for i in v_payment_detail_field_ids.first .. v_payment_detail_field_ids.last
+    if p_payment_detail_field_ids is not empty then
+        for i in p_payment_detail_field_ids.first .. p_payment_detail_field_ids.last
         loop
-            if v_payment_detail_field_ids(i) is null then
+            if p_payment_detail_field_ids(i) is null then
                 dbms_output.put_line ('ID поля не может быть пустым.');
             end if;
         end loop;
@@ -255,12 +309,12 @@ begin
 
     delete from payment_detail pd
     where
-        pd.payment_id = v_payment_id
+        pd.payment_id = p_payment_id
         and pd.field_id in
             (select t.column_value as field_id
-            from table (v_payment_detail_field_ids) t);
+            from table (p_payment_detail_field_ids) t);
 
-    dbms_output.put_line (v_message || ' ID платежа: ' || to_char (v_payment_id) || '. Количество удаляемых полей: ' || to_char (v_payment_detail_field_ids.count()) || '. Выполнено в: ' || to_char (v_ts_sys, 'dd.mm.yy hh24:mi:ss.ff6'));
+    dbms_output.put_line (v_message || ' ID платежа: ' || to_char (p_payment_id) || '. Количество удаляемых полей: ' || to_char (p_payment_detail_field_ids.count()) || '. Выполнено в: ' || to_char (systimestamp, 'dd.mm.yy hh24:mi:ss.ff6'));
     dbms_output.put_line (null);
-end;
+end delete_payment_detail;
 /
