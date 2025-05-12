@@ -296,14 +296,7 @@ begin
         dbms_output.put_line ('ID платежа не может быть пустым.');
     end if;
 
-    if p_payment_detail_field_ids is not empty then
-        for i in p_payment_detail_field_ids.first .. p_payment_detail_field_ids.last
-        loop
-            if p_payment_detail_field_ids(i) is null then
-                dbms_output.put_line ('ID поля не может быть пустым.');
-            end if;
-        end loop;
-    else
+    if not p_payment_detail_field_ids is not empty then
         dbms_output.put_line ('Коллекция не содержит данных.');
     end if;
 
