@@ -1,4 +1,4 @@
-create or replace package body payment_detail_api_pack
+п»їcreate or replace package body payment_detail_api_pack
 is
 
 procedure check_null
@@ -17,7 +17,7 @@ procedure print_result
     p_message2 in varchar2 default null)
 is
 begin
-    dbms_output.put_line ('(' || to_char (systimestamp, c_timestamp_format) || ') ID платежа: ' || to_char (p_payment_id) || ' - ' || p_message || p_message2);
+    dbms_output.put_line ('(' || to_char (systimestamp, c_timestamp_format) || ') ID РїР»Р°С‚РµР¶Р°: ' || to_char (p_payment_id) || ' - ' || p_message || p_message2);
 end print_result;
 
 procedure insert_or_update_payment_detail
@@ -86,7 +86,7 @@ begin
             (select t.column_value as field_id
             from table (p_payment_detail_field_ids) t);
 
-    print_result (p_payment_id, c_message_delete, ' Количество удаляемых полей: ' || to_char (p_payment_detail_field_ids.count()));
+    print_result (p_payment_id, c_message_delete, ' РљРѕР»РёС‡РµСЃС‚РІРѕ СѓРґР°Р»СЏРµРјС‹С… РїРѕР»РµР№: ' || to_char (p_payment_detail_field_ids.count()));
 end delete_payment_detail;
 
 end payment_detail_api_pack;

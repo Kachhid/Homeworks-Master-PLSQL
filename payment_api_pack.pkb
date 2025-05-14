@@ -1,4 +1,4 @@
-create or replace package body payment_api_pack
+ï»¿create or replace package body payment_api_pack
 is
 
 procedure check_null
@@ -37,7 +37,7 @@ procedure print_result
     p_reason in payment.status_change_reason%type default null)
 is
 begin
-    dbms_output.put_line ('(' || to_char (systimestamp, c_timestamp_format) || ') ID ïëàòåæà: ' || to_char (p_payment_id) || '. Ñòàòóñ: ' || to_char (p_status.status) || ' - ' || p_status.message || '. Ïğè÷èíà: ' || p_reason);
+    dbms_output.put_line ('(' || to_char (systimestamp, c_timestamp_format) || ') ID Ğ¿Ğ»Ğ°Ñ‚ĞµĞ¶Ğ°: ' || to_char (p_payment_id) || '. Ğ¡Ñ‚Ğ°Ñ‚ÑƒÑ: ' || to_char (p_status.status) || ' - ' || p_status.message || '. ĞŸÑ€Ğ¸Ñ‡Ğ¸Ğ½Ğ°: ' || p_reason);
 end print_result;
 
 function create_payment

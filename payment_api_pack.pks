@@ -1,6 +1,6 @@
-create or replace package payment_api_pack
+п»їcreate or replace package payment_api_pack
 /*==============================================================================
-Purpose: API для сущностей “Платеж”
+Purpose: API РґР»СЏ СЃСѓС‰РЅРѕСЃС‚РµР№ вЂњРџР»Р°С‚РµР¶вЂќ
 Autor: Shatalin A.A.
 Note:
 Fix:
@@ -10,21 +10,21 @@ is
         (status payment.status%type,
         message varchar2 (200 char));
 
-    c_status_create constant t_status := t_status (0, 'Платеж создан.');
-    c_status_success constant t_status := t_status (1, 'Успешное завершение платежа.');
-    c_status_error constant t_status := t_status (2, 'Сброс платежа в "ошибочный статус" с указанием причины.');
-    c_status_cancel constant t_status := t_status (3, 'Отмена платежа с указанием причины.');
+    c_status_create constant t_status := t_status (0, 'РџР»Р°С‚РµР¶ СЃРѕР·РґР°РЅ.');
+    c_status_success constant t_status := t_status (1, 'РЈСЃРїРµС€РЅРѕРµ Р·Р°РІРµСЂС€РµРЅРёРµ РїР»Р°С‚РµР¶Р°.');
+    c_status_error constant t_status := t_status (2, 'РЎР±СЂРѕСЃ РїР»Р°С‚РµР¶Р° РІ "РѕС€РёР±РѕС‡РЅС‹Р№ СЃС‚Р°С‚СѓСЃ" СЃ СѓРєР°Р·Р°РЅРёРµРј РїСЂРёС‡РёРЅС‹.');
+    c_status_cancel constant t_status := t_status (3, 'РћС‚РјРµРЅР° РїР»Р°С‚РµР¶Р° СЃ СѓРєР°Р·Р°РЅРёРµРј РїСЂРёС‡РёРЅС‹.');
 
-    c_message_error_field_is_null varchar2 (200 char) := 'Поле не может быть пустым';
-    c_message_error_payment_not_on_status_created varchar2 (200 char) := 'Ошибка, текущий статус платежа не "Создан".';
+    c_message_error_field_is_null varchar2 (200 char) := 'РџРѕР»Рµ РЅРµ РјРѕР¶РµС‚ Р±С‹С‚СЊ РїСѓСЃС‚С‹Рј';
+    c_message_error_payment_not_on_status_created varchar2 (200 char) := 'РћС€РёР±РєР°, С‚РµРєСѓС‰РёР№ СЃС‚Р°С‚СѓСЃ РїР»Р°С‚РµР¶Р° РЅРµ "РЎРѕР·РґР°РЅ".';
 
     c_timestamp_format constant varchar2 (25 char) := 'dd.mm.yy hh24:mi:ss.ff6';
 
 /*==============================================================================
-Purpose: Создание платежа
+Purpose: РЎРѕР·РґР°РЅРёРµ РїР»Р°С‚РµР¶Р°
 Autor: Shatalin A.A.
 Parameter:
-Return: id платежа
+Return: id РїР»Р°С‚РµР¶Р°
 Note:
 Fix:
 ==============================================================================*/
@@ -34,11 +34,11 @@ function create_payment
 return payment.payment_id%type;
 
 /*==============================================================================
-Purpose: Перевод платежа на статус "Ошибка".
+Purpose: РџРµСЂРµРІРѕРґ РїР»Р°С‚РµР¶Р° РЅР° СЃС‚Р°С‚СѓСЃ "РћС€РёР±РєР°".
 Autor: Shatalin A.A.
 Parameter:
-    p_payment_id - id платежа;
-    p_reason - причина ошибки платежа;
+    p_payment_id - id РїР»Р°С‚РµР¶Р°;
+    p_reason - РїСЂРёС‡РёРЅР° РѕС€РёР±РєРё РїР»Р°С‚РµР¶Р°;
 Return:
 Note:
 Fix:
@@ -48,11 +48,11 @@ procedure fail_payment
     p_reason in payment.status_change_reason%type);
 
 /*==============================================================================
-Purpose: Перевод платежа на статус "Отмена".
+Purpose: РџРµСЂРµРІРѕРґ РїР»Р°С‚РµР¶Р° РЅР° СЃС‚Р°С‚СѓСЃ "РћС‚РјРµРЅР°".
 Autor: Shatalin A.A.
 Parameter:
-    p_payment_id - id платежа;
-    p_reason - причина отмены платежа;
+    p_payment_id - id РїР»Р°С‚РµР¶Р°;
+    p_reason - РїСЂРёС‡РёРЅР° РѕС‚РјРµРЅС‹ РїР»Р°С‚РµР¶Р°;
 Return:
 Note:
 Fix:
@@ -62,10 +62,10 @@ procedure cancel_payment
     p_reason in payment.status_change_reason%type);
 
 /*==============================================================================
-Purpose: Перевод платежа на статус "Успешно".
+Purpose: РџРµСЂРµРІРѕРґ РїР»Р°С‚РµР¶Р° РЅР° СЃС‚Р°С‚СѓСЃ "РЈСЃРїРµС€РЅРѕ".
 Autor: Shatalin A.A.
 Parameter:
-    p_payment_id - id платежа;
+    p_payment_id - id РїР»Р°С‚РµР¶Р°;
 Return:
 Note:
 Fix:

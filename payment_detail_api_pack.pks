@@ -1,27 +1,27 @@
-create or replace package payment_detail_api_pack
+п»їcreate or replace package payment_detail_api_pack
 /*==============================================================================
-Purpose: API для сущностей “Детали платежа”
+Purpose: API РґР»СЏ СЃСѓС‰РЅРѕСЃС‚РµР№ вЂњР”РµС‚Р°Р»Рё РїР»Р°С‚РµР¶Р°вЂќ
 Autor: Shatalin A.A.
 Note:
 Fix:
 ==============================================================================*/
 is
-    c_message_insert_or_update constant varchar2 (200 char) := 'Данные платежа добавлены или обновлены по списку id_поля/значение.';
-    c_message_delete varchar2 (200 char) := 'Детали платежа удалены по списку id_полей.';
+    c_message_insert_or_update constant varchar2 (200 char) := 'Р”Р°РЅРЅС‹Рµ РїР»Р°С‚РµР¶Р° РґРѕР±Р°РІР»РµРЅС‹ РёР»Рё РѕР±РЅРѕРІР»РµРЅС‹ РїРѕ СЃРїРёСЃРєСѓ id_РїРѕР»СЏ/Р·РЅР°С‡РµРЅРёРµ.';
+    c_message_delete varchar2 (200 char) := 'Р”РµС‚Р°Р»Рё РїР»Р°С‚РµР¶Р° СѓРґР°Р»РµРЅС‹ РїРѕ СЃРїРёСЃРєСѓ id_РїРѕР»РµР№.';
 
-    c_message_error_field_is_null varchar2 (200 char) := 'Поле не может быть пустым';
-    c_message_error_field_id_is_null varchar2 (200 char) := 'ID поля не может быть пустым.';
-    c_message_error_field_value_is_null varchar2 (200 char) := 'Значение в поле не может быть пустым.';
-    c_message_error_not_init_or_empty varchar2 (200 char) := 'Коллекция не инициализирована/содержит данных.';
+    c_message_error_field_is_null varchar2 (200 char) := 'РџРѕР»Рµ РЅРµ РјРѕР¶РµС‚ Р±С‹С‚СЊ РїСѓСЃС‚С‹Рј';
+    c_message_error_field_id_is_null varchar2 (200 char) := 'ID РїРѕР»СЏ РЅРµ РјРѕР¶РµС‚ Р±С‹С‚СЊ РїСѓСЃС‚С‹Рј.';
+    c_message_error_field_value_is_null varchar2 (200 char) := 'Р—РЅР°С‡РµРЅРёРµ РІ РїРѕР»Рµ РЅРµ РјРѕР¶РµС‚ Р±С‹С‚СЊ РїСѓСЃС‚С‹Рј.';
+    c_message_error_not_init_or_empty varchar2 (200 char) := 'РљРѕР»Р»РµРєС†РёСЏ РЅРµ РёРЅРёС†РёР°Р»РёР·РёСЂРѕРІР°РЅР°/СЃРѕРґРµСЂР¶РёС‚ РґР°РЅРЅС‹С….';
 
     c_timestamp_format constant varchar2 (25 char) := 'dd.mm.yy hh24:mi:ss.ff6';
 
 /*==============================================================================
-Purpose: Обновление деталей платежа.
+Purpose: РћР±РЅРѕРІР»РµРЅРёРµ РґРµС‚Р°Р»РµР№ РїР»Р°С‚РµР¶Р°.
 Autor: Shatalin A.A.
 Parameter:
-    p_payment_id - id платежа;
-    p_payment_detail - детади платежа;
+    p_payment_id - id РїР»Р°С‚РµР¶Р°;
+    p_payment_detail - РґРµС‚Р°РґРё РїР»Р°С‚РµР¶Р°;
 Return:
 Note:
 Fix:
@@ -31,11 +31,11 @@ procedure insert_or_update_payment_detail
     p_payment_detail in t_payment_detail_array);
 
 /*==============================================================================
-Purpose: Удаление деталей платежа.
+Purpose: РЈРґР°Р»РµРЅРёРµ РґРµС‚Р°Р»РµР№ РїР»Р°С‚РµР¶Р°.
 Autor: Shatalin A.A.
 Parameter:
-    p_payment_id - id платежа;
-    p_payment_detail_field_ids - id деталей платежа;
+    p_payment_id - id РїР»Р°С‚РµР¶Р°;
+    p_payment_detail_field_ids - id РґРµС‚Р°Р»РµР№ РїР»Р°С‚РµР¶Р°;
 Return:
 Note:
 Fix:
