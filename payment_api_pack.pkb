@@ -1,43 +1,13 @@
 ﻿create or replace package body payment_api_pack
 is
 
-procedure check_null
-    (p_param in varchar2,
-    p_param_name in varchar2)
-is
-begin
-    if p_param is null then
-        dbms_output.put_line (p_param_name || ': ' || c_message_error_field_is_null);
-    end if;
-end check_null;
-
-procedure check_null
-    (p_param in timestamp,
-    p_param_name in varchar2)
-is
-begin
-    if p_param is null then
-        check_null (to_char (null), p_param_name);
-    end if;
-end check_null;
-
-procedure check_null
-    (p_param in number,
-    p_param_name in varchar2)
-is
-begin
-    if p_param is null then
-        check_null (to_char (null), p_param_name);
-    end if;
-end check_null;
-
 procedure print_result
     (p_payment_id in payment.payment_id%type,
-    p_status in t_status,
+    p_status in payment_constant_pack.t_status,
     p_reason in payment.status_change_reason%type default null)
 is
 begin
-    dbms_output.put_line ('(' || to_char (systimestamp, c_timestamp_format) || ') ID платежа: ' || to_char (p_payment_id) || '. Статус: ' || to_char (p_status.status) || ' - ' || p_status.message || '. Причина: ' || p_reason);
+    dbms_output.put_line ('(' || to_char (systimestamp, payment_constant_pack.c_timestamp_format) || ') ID платежа: ' || to_char (p_payment_id) || '. Статус: ' || to_char (p_status.status) || ' - ' || p_status.message || '. Причина: ' || p_reason);
 end print_result;
 
 function create_payment
@@ -47,11 +17,15 @@ return payment.payment_id%type
 is
     v_payment_id payment.payment_id%type;
 begin
-    check_null (p_payment.create_dtime, 'create_dtime');
-    check_null (p_payment.summa, 'summa');
-    check_null (p_payment.currency_id, 'currency_id');
-    check_null (p_payment.from_client_id, 'from_client_id');
-    check_null (p_payment.to_client_id, 'to_client_id');
+    if
+        p_payment.create_dtime is null or
+        p_payment.summa is null or
+        p_payment.currency_id is null or
+        p_payment.from_client_id is null or
+        p_payment.to_client_id is null
+    then
+        raise payment_constant_pack.e_invalid_input_parameter;
+    end if;
 
     insert into payment
         (payment_id,
@@ -68,15 +42,20 @@ begin
         p_payment.currency_id,
         p_payment.from_client_id,
         p_payment.to_client_id,
-        c_status_create.status)
+        payment_constant_pack.c_status_create.status)
     returning payment_id into v_payment_id;
 
     payment_detail_api_pack.insert_or_update_payment_detail
         (p_payment_id => v_payment_id,
         p_payment_detail => p_payment_detail);
 
-    print_result (v_payment_id, c_status_create);
+    print_result (v_payment_id, payment_constant_pack.c_status_create);
     return v_payment_id;
+exception
+    when payment_constant_pack.e_invalid_input_parameter then
+        raise_application_error (payment_constant_pack.e_invalid_input_parameter_code, payment_constant_pack.e_invalid_input_parameter_message);
+    when others then
+        raise_application_error (payment_constant_pack.e_other_code, payment_constant_pack.e_other_message);
 end create_payment;
 
 procedure fail_payment
@@ -84,22 +63,33 @@ procedure fail_payment
     p_reason in payment.status_change_reason%type)
 is
 begin
-    check_null (p_payment_id, 'p_payment_id');
-    check_null (p_reason, 'p_reason');
+    if
+        p_payment_id is null or
+        p_reason is null
+    then
+        raise payment_constant_pack.e_invalid_input_parameter;
+    end if;
 
     update payment p
     set
-        p.status = c_status_error.status,
+        p.status = payment_constant_pack.c_status_error.status,
         p.status_change_reason = p_reason
     where
         p.payment_id = p_payment_id
-        and p.status = c_status_create.status;
+        and p.status = payment_constant_pack.c_status_create.status;
 
     if sql%rowcount = 0 then
-        dbms_output.put_line (c_message_error_payment_not_on_status_created);
+        raise payment_constant_pack.e_invalid_payment_status;
     end if;
 
-    print_result (p_payment_id, c_status_error, p_reason);
+    print_result (p_payment_id, payment_constant_pack.c_status_error, p_reason);
+exception
+    when payment_constant_pack.e_invalid_input_parameter then
+        raise_application_error (payment_constant_pack.e_invalid_input_parameter_code, payment_constant_pack.e_invalid_input_parameter_message);
+    when payment_constant_pack.e_invalid_payment_status then
+        raise_application_error (payment_constant_pack.e_invalid_payment_status_code, payment_constant_pack.e_invalid_payment_status_message);
+    when others then
+        raise_application_error (payment_constant_pack.e_other_code, payment_constant_pack.e_other_message);
 end fail_payment;
 
 procedure cancel_payment
@@ -107,43 +97,63 @@ procedure cancel_payment
     p_reason in payment.status_change_reason%type)
 is
 begin
-    check_null (p_payment_id, 'p_payment_id');
-    check_null (p_reason, 'p_reason');
+    if
+        p_payment_id is null or
+        p_reason is null
+    then
+        raise payment_constant_pack.e_invalid_input_parameter;
+    end if;
 
     update payment p
     set
-        p.status = c_status_cancel.status,
+        p.status = payment_constant_pack.c_status_cancel.status,
         p.status_change_reason = p_reason
     where
         p.payment_id = p_payment_id
-        and p.status = c_status_create.status;
+        and p.status = payment_constant_pack.c_status_create.status;
 
     if sql%rowcount = 0 then
-        dbms_output.put_line (c_message_error_payment_not_on_status_created);
+        raise payment_constant_pack.e_invalid_payment_status;
     end if;
 
-    print_result (p_payment_id, c_status_error, p_reason);
+    print_result (p_payment_id, payment_constant_pack.c_status_error, p_reason);
+exception
+    when payment_constant_pack.e_invalid_input_parameter then
+        raise_application_error (payment_constant_pack.e_invalid_input_parameter_code, payment_constant_pack.e_invalid_input_parameter_message);
+    when payment_constant_pack.e_invalid_payment_status then
+        raise_application_error (payment_constant_pack.e_invalid_payment_status_code, payment_constant_pack.e_invalid_payment_status_message);
+    when others then
+        raise_application_error (payment_constant_pack.e_other_code, payment_constant_pack.e_other_message);
 end cancel_payment;
 
 procedure successful_finish_payment
     (p_payment_id in payment.payment_id%type)
 is
 begin
-    check_null (p_payment_id, 'p_payment_id');
+    if p_payment_id is null then
+        raise payment_constant_pack.e_invalid_input_parameter;
+    end if;
 
     update payment p
     set
-        p.status = c_status_success.status,
+        p.status = payment_constant_pack.c_status_success.status,
         p.status_change_reason = null
     where
         p.payment_id = p_payment_id
-        and p.status = c_status_create.status;
+        and p.status = payment_constant_pack.c_status_create.status;
 
     if sql%rowcount = 0 then
-        dbms_output.put_line (c_message_error_payment_not_on_status_created);
+        raise payment_constant_pack.e_invalid_payment_status;
     end if;
 
-    print_result (p_payment_id, c_status_success);
+    print_result (p_payment_id, payment_constant_pack.c_status_success);
+exception
+    when payment_constant_pack.e_invalid_input_parameter then
+        raise_application_error (payment_constant_pack.e_invalid_input_parameter_code, payment_constant_pack.e_invalid_input_parameter_message);
+    when payment_constant_pack.e_invalid_payment_status then
+        raise_application_error (payment_constant_pack.e_invalid_payment_status_code, payment_constant_pack.e_invalid_payment_status_message);
+    when others then
+        raise_application_error (payment_constant_pack.e_other_code, payment_constant_pack.e_other_message);
 end successful_finish_payment;
 
 end payment_api_pack;
