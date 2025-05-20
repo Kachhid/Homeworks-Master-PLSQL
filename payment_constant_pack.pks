@@ -1,6 +1,6 @@
-create or replace package payment_constant_pack
+п»їcreate or replace package payment_constant_pack
 /*==============================================================================
-Purpose: Константы для сущностей “Платеж” и “Детали платежа”
+Purpose: РљРѕРЅСЃС‚Р°РЅС‚С‹ РґР»СЏ СЃСѓС‰РЅРѕСЃС‚РµР№ вЂњРџР»Р°С‚РµР¶вЂќ Рё вЂњР”РµС‚Р°Р»Рё РїР»Р°С‚РµР¶Р°вЂќ
 Autor: Shatalin A.A.
 Note:
 Fix:
@@ -13,38 +13,38 @@ is
         (status payment.status%type,
         message varchar2 (200 char));
 
-    c_status_create constant t_status := t_status (0, 'Платеж создан.');
-    c_status_success constant t_status := t_status (1, 'Успешное завершение платежа.');
-    c_status_error constant t_status := t_status (2, 'Сброс платежа в "ошибочный статус" с указанием причины.');
-    c_status_cancel constant t_status := t_status (3, 'Отмена платежа с указанием причины.');
+    c_status_create constant t_status := t_status (0, 'РџР»Р°С‚РµР¶ СЃРѕР·РґР°РЅ.');
+    c_status_success constant t_status := t_status (1, 'РЈСЃРїРµС€РЅРѕРµ Р·Р°РІРµСЂС€РµРЅРёРµ РїР»Р°С‚РµР¶Р°.');
+    c_status_error constant t_status := t_status (2, 'РЎР±СЂРѕСЃ РїР»Р°С‚РµР¶Р° РІ "РѕС€РёР±РѕС‡РЅС‹Р№ СЃС‚Р°С‚СѓСЃ" СЃ СѓРєР°Р·Р°РЅРёРµРј РїСЂРёС‡РёРЅС‹.');
+    c_status_cancel constant t_status := t_status (3, 'РћС‚РјРµРЅР° РїР»Р°С‚РµР¶Р° СЃ СѓРєР°Р·Р°РЅРёРµРј РїСЂРёС‡РёРЅС‹.');
 
-    c_message_insert_or_update constant varchar2 (200 char) := 'Данные платежа добавлены или обновлены по списку id_поля/значение';
-    c_message_delete constant varchar2 (200 char) := 'Детали платежа удалены по списку id_полей';
+    c_message_insert_or_update constant varchar2 (200 char) := 'Р”Р°РЅРЅС‹Рµ РїР»Р°С‚РµР¶Р° РґРѕР±Р°РІР»РµРЅС‹ РёР»Рё РѕР±РЅРѕРІР»РµРЅС‹ РїРѕ СЃРїРёСЃРєСѓ id_РїРѕР»СЏ/Р·РЅР°С‡РµРЅРёРµ';
+    c_message_delete constant varchar2 (200 char) := 'Р”РµС‚Р°Р»Рё РїР»Р°С‚РµР¶Р° СѓРґР°Р»РµРЅС‹ РїРѕ СЃРїРёСЃРєСѓ id_РїРѕР»РµР№';
 
-    c_message_error_field_is_null constant varchar2 (200 char) := 'Поле не может быть пустым';
+    c_message_error_field_is_null constant varchar2 (200 char) := 'РџРѕР»Рµ РЅРµ РјРѕР¶РµС‚ Р±С‹С‚СЊ РїСѓСЃС‚С‹Рј';
 
     e_invalid_input_parameter exception;
     e_invalid_input_parameter_code constant number (5) := -20001;
-    e_invalid_input_parameter_message constant varchar2 (200 char) := 'Недопустимый входной параметр.';
+    e_invalid_input_parameter_message constant varchar2 (200 char) := 'РќРµРґРѕРїСѓСЃС‚РёРјС‹Р№ РІС…РѕРґРЅРѕР№ РїР°СЂР°РјРµС‚СЂ.';
 
     e_invalid_payment_status exception;
     e_invalid_payment_status_code constant number (5) := -20002;
-    e_invalid_payment_status_message constant varchar2 (200 char) := 'Недопустимый текущий статус платежа (не "Создан")';
+    e_invalid_payment_status_message constant varchar2 (200 char) := 'РќРµРґРѕРїСѓСЃС‚РёРјС‹Р№ С‚РµРєСѓС‰РёР№ СЃС‚Р°С‚СѓСЃ РїР»Р°С‚РµР¶Р° (РЅРµ "РЎРѕР·РґР°РЅ")';
 
     e_invalid_collection exception;
     e_invalid_collection_code constant number (5) := -20003;
-    e_invalid_collection_message constant varchar2 (200 char) := 'Коллекция не инициализирована или содержит данных.';
+    e_invalid_collection_message constant varchar2 (200 char) := 'РљРѕР»Р»РµРєС†РёСЏ РЅРµ РёРЅРёС†РёР°Р»РёР·РёСЂРѕРІР°РЅР° РёР»Рё СЃРѕРґРµСЂР¶РёС‚ РґР°РЅРЅС‹С….';
 
     e_invalid_collection_field_id exception;
     e_invalid_collection_field_id_code constant number (5) := -20004;
-    e_invalid_collection_field_id_message constant varchar2 (200 char) := 'ID поля не может быть пустым.';
+    e_invalid_collection_field_id_message constant varchar2 (200 char) := 'ID РїРѕР»СЏ РЅРµ РјРѕР¶РµС‚ Р±С‹С‚СЊ РїСѓСЃС‚С‹Рј.';
 
     e_invalid_collection_field_value exception;
     e_invalid_collection_field_value_code constant number (5) := -20005;
-    e_invalid_collection_field_value_message constant varchar2 (200 char) := 'Значение в поле не может быть пустым.';
+    e_invalid_collection_field_value_message constant varchar2 (200 char) := 'Р—РЅР°С‡РµРЅРёРµ РІ РїРѕР»Рµ РЅРµ РјРѕР¶РµС‚ Р±С‹С‚СЊ РїСѓСЃС‚С‹Рј.';
 
     e_other exception;
     e_other_code constant number (5) := -20100;
-    e_other_message constant varchar2 (200 char) := 'Непредвиденная ошибка.';
+    e_other_message constant varchar2 (200 char) := 'РќРµРїСЂРµРґРІРёРґРµРЅРЅР°СЏ РѕС€РёР±РєР°.';
 
 end payment_constant_pack;
