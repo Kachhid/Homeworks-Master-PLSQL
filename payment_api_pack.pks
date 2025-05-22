@@ -6,19 +6,6 @@ Note:
 Fix:
 ==============================================================================*/
 is
-    type t_status is record
-        (status payment.status%type,
-        message varchar2 (200 char));
-
-    c_status_create constant t_status := t_status (0, 'Платеж создан.');
-    c_status_success constant t_status := t_status (1, 'Успешное завершение платежа.');
-    c_status_error constant t_status := t_status (2, 'Сброс платежа в "ошибочный статус" с указанием причины.');
-    c_status_cancel constant t_status := t_status (3, 'Отмена платежа с указанием причины.');
-
-    c_message_error_field_is_null varchar2 (200 char) := 'Поле не может быть пустым';
-    c_message_error_payment_not_on_status_created varchar2 (200 char) := 'Ошибка, текущий статус платежа не "Создан".';
-
-    c_timestamp_format constant varchar2 (25 char) := 'dd.mm.yy hh24:mi:ss.ff6';
 
 /*==============================================================================
 Purpose: Создание платежа

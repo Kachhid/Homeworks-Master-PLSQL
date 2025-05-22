@@ -6,15 +6,6 @@ Note:
 Fix:
 ==============================================================================*/
 is
-    c_message_insert_or_update constant varchar2 (200 char) := 'Данные платежа добавлены или обновлены по списку id_поля/значение.';
-    c_message_delete varchar2 (200 char) := 'Детали платежа удалены по списку id_полей.';
-
-    c_message_error_field_is_null varchar2 (200 char) := 'Поле не может быть пустым';
-    c_message_error_field_id_is_null varchar2 (200 char) := 'ID поля не может быть пустым.';
-    c_message_error_field_value_is_null varchar2 (200 char) := 'Значение в поле не может быть пустым.';
-    c_message_error_not_init_or_empty varchar2 (200 char) := 'Коллекция не инициализирована/содержит данных.';
-
-    c_timestamp_format constant varchar2 (25 char) := 'dd.mm.yy hh24:mi:ss.ff6';
 
 /*==============================================================================
 Purpose: Обновление деталей платежа.
