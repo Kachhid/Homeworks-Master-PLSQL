@@ -35,4 +35,14 @@ procedure delete_payment_detail
     (p_payment_id in payment.payment_id%type,
     p_payment_detail_field_ids in t_number_array);
 
+/*==============================================================================
+Purpose: Проверка прав на IU в payment.
+Autor: Shatalin A.A.
+Parameter:
+Return:
+Note:
+Fix:
+==============================================================================*/
+procedure check_dml_rigths;
+
 end payment_detail_api_pack;

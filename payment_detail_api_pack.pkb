@@ -1,5 +1,34 @@
 ﻿create or replace package body payment_detail_api_pack
 is
+    g_is_api boolean := false;
+
+/*==============================================================================
+Purpose: Разрешение изменений (IUD)
+Autor: Shatalin A.A.
+Parameter:
+Return:
+Note: Для конттроля, что все изменения идут через api.
+Fix:
+==============================================================================*/
+procedure allow_changes
+is
+begin
+    g_is_api := true;
+end allow_changes;
+
+/*==============================================================================
+Purpose: Запрет изменений (IUD)
+Autor: Shatalin A.A.
+Parameter:
+Return:
+Note: Для конттроля, что все изменения идут через api.
+Fix:
+==============================================================================*/
+procedure disallow_changes
+is
+begin
+    g_is_api := false;
+end disallow_changes;
 
 procedure print_result
     (p_payment_id in payment.payment_id%type,
@@ -34,6 +63,7 @@ begin
         end loop;
     end if;
 
+    allow_changes;
     merge into payment_detail pd
     using
         (select
@@ -56,6 +86,7 @@ begin
             (t.payment_id,
             t.field_id,
             t.field_value);
+    disallow_changes;
 
     print_result (p_payment_id, payment_constant_pack.c_message_insert_or_update);
 exception
@@ -68,6 +99,7 @@ exception
     when payment_constant_pack.e_invalid_collection_field_value then
         raise_application_error (payment_constant_pack.e_invalid_collection_field_value_code, payment_constant_pack.e_invalid_collection_field_value_message);
     when others then
+        disallow_changes;
         raise_application_error (payment_constant_pack.e_other_code, payment_constant_pack.e_other_message);
 end insert_or_update_payment_detail;
 
@@ -84,12 +116,14 @@ begin
         raise payment_constant_pack.e_invalid_collection;
     end if;
 
+    allow_changes;
     delete from payment_detail pd
     where
         pd.payment_id = p_payment_id
         and pd.field_id in
             (select t.column_value as field_id
             from table (p_payment_detail_field_ids) t);
+    disallow_changes;
 
     print_result (p_payment_id, payment_constant_pack.c_message_delete, ' Количество удаляемых полей: ' || to_char (p_payment_detail_field_ids.count()));
 exception
@@ -98,7 +132,16 @@ exception
     when payment_constant_pack.e_invalid_collection then
         raise_application_error (payment_constant_pack.e_invalid_collection_code, payment_constant_pack.e_invalid_collection_message);
     when others then
+        allow_changes;
         raise_application_error (payment_constant_pack.e_other_code, payment_constant_pack.e_other_message);
 end delete_payment_detail;
+
+procedure check_dml_rigths
+is
+begin
+    if not g_is_api then
+        raise_application_error (payment_constant_pack.e_invalid_operation_api_code, payment_constant_pack.e_invalid_operation_api_message);
+    end if;
+end check_dml_rigths;
 
 end payment_detail_api_pack;

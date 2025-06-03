@@ -60,4 +60,14 @@ Fix:
 procedure successful_finish_payment
     (p_payment_id in payment.payment_id%type);
 
+/*==============================================================================
+Purpose: Проверка прав на IU в payment.
+Autor: Shatalin A.A.
+Parameter:
+Return:
+Note:
+Fix:
+==============================================================================*/
+procedure check_dml_rigths;
+
 end payment_api_pack;
