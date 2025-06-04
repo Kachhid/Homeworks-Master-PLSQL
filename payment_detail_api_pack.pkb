@@ -30,34 +30,25 @@ begin
     g_is_api := false;
 end disallow_changes;
 
-procedure print_result
-    (p_payment_id in payment.payment_id%type,
-    p_message in varchar2,
-    p_message2 in varchar2 default null)
-is
-begin
-    dbms_output.put_line ('(' || to_char (systimestamp, payment_constant_pack.c_timestamp_format) || ') ID платежа: ' || to_char (p_payment_id) || ' - ' || p_message || p_message2);
-end print_result;
-
 procedure insert_or_update_payment_detail
     (p_payment_id in payment.payment_id%type,
     p_payment_detail in t_payment_detail_array)
 is
 begin
     if p_payment_id is null then
-        raise payment_constant_pack.e_invalid_input_parameter;
+        raise common_pack.e_invalid_input_parameter;
     end if;
 
     if p_payment_detail is null or not p_payment_detail is not empty then
-        raise payment_constant_pack.e_invalid_collection;
+        raise common_pack.e_invalid_collection;
     else
         for i in p_payment_detail.first .. p_payment_detail.last
         loop
             if p_payment_detail(i).field_id is null then
-                raise payment_constant_pack.e_invalid_collection_field_id;
+                raise common_pack.e_invalid_collection_field_id;
             end if;
             if p_payment_detail(i).field_value is null then
-                raise payment_constant_pack.e_invalid_collection_field_value;
+                raise common_pack.e_invalid_collection_field_value;
             end if;
             dbms_output.put_line ('Field_id: ' || p_payment_detail(i).field_id || '. Field_value: ' || p_payment_detail(i).field_value);
         end loop;
@@ -87,20 +78,18 @@ begin
             t.field_id,
             t.field_value);
     disallow_changes;
-
-    print_result (p_payment_id, payment_constant_pack.c_message_insert_or_update);
 exception
-    when payment_constant_pack.e_invalid_input_parameter then
-        raise_application_error (payment_constant_pack.e_invalid_input_parameter_code, payment_constant_pack.e_invalid_input_parameter_message);
-    when payment_constant_pack.e_invalid_collection then
-        raise_application_error (payment_constant_pack.e_invalid_collection_code, payment_constant_pack.e_invalid_collection_message);
-    when payment_constant_pack.e_invalid_collection_field_id then
-        raise_application_error (payment_constant_pack.e_invalid_collection_field_id_code, payment_constant_pack.e_invalid_collection_field_id_message);
-    when payment_constant_pack.e_invalid_collection_field_value then
-        raise_application_error (payment_constant_pack.e_invalid_collection_field_value_code, payment_constant_pack.e_invalid_collection_field_value_message);
+    when common_pack.e_invalid_input_parameter then
+        raise_application_error (common_pack.e_invalid_input_parameter_code, common_pack.e_invalid_input_parameter_message);
+    when common_pack.e_invalid_collection then
+        raise_application_error (common_pack.e_invalid_collection_code, common_pack.e_invalid_collection_message);
+    when common_pack.e_invalid_collection_field_id then
+        raise_application_error (common_pack.e_invalid_collection_field_id_code, common_pack.e_invalid_collection_field_id_message);
+    when common_pack.e_invalid_collection_field_value then
+        raise_application_error (common_pack.e_invalid_collection_field_value_code, common_pack.e_invalid_collection_field_value_message);
     when others then
         disallow_changes;
-        raise_application_error (payment_constant_pack.e_other_code, payment_constant_pack.e_other_message);
+        raise_application_error (common_pack.e_other_code, common_pack.e_other_message);
 end insert_or_update_payment_detail;
 
 procedure delete_payment_detail
@@ -109,11 +98,11 @@ procedure delete_payment_detail
 is
 begin
     if p_payment_id is null then
-        raise payment_constant_pack.e_invalid_input_parameter;
+        raise common_pack.e_invalid_input_parameter;
     end if;
 
     if p_payment_detail_field_ids is null or not p_payment_detail_field_ids is not empty then
-        raise payment_constant_pack.e_invalid_collection;
+        raise common_pack.e_invalid_collection;
     end if;
 
     allow_changes;
@@ -124,23 +113,21 @@ begin
             (select t.column_value as field_id
             from table (p_payment_detail_field_ids) t);
     disallow_changes;
-
-    print_result (p_payment_id, payment_constant_pack.c_message_delete, ' Количество удаляемых полей: ' || to_char (p_payment_detail_field_ids.count()));
 exception
-    when payment_constant_pack.e_invalid_input_parameter then
-        raise_application_error (payment_constant_pack.e_invalid_input_parameter_code, payment_constant_pack.e_invalid_input_parameter_message);
-    when payment_constant_pack.e_invalid_collection then
-        raise_application_error (payment_constant_pack.e_invalid_collection_code, payment_constant_pack.e_invalid_collection_message);
+    when common_pack.e_invalid_input_parameter then
+        raise_application_error (common_pack.e_invalid_input_parameter_code, common_pack.e_invalid_input_parameter_message);
+    when common_pack.e_invalid_collection then
+        raise_application_error (common_pack.e_invalid_collection_code, common_pack.e_invalid_collection_message);
     when others then
         allow_changes;
-        raise_application_error (payment_constant_pack.e_other_code, payment_constant_pack.e_other_message);
+        raise_application_error (common_pack.e_other_code, common_pack.e_other_message);
 end delete_payment_detail;
 
 procedure check_dml_rigths
 is
 begin
-    if not g_is_api then
-        raise_application_error (payment_constant_pack.e_invalid_operation_api_code, payment_constant_pack.e_invalid_operation_api_message);
+    if not g_is_api and not common_pack.is_manual_changes_allowed then
+        raise_application_error (common_pack.e_invalid_operation_api_code, common_pack.e_invalid_operation_api_message);
     end if;
 end check_dml_rigths;
 

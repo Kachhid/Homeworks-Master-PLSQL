@@ -1,5 +1,5 @@
 create or replace trigger payment_b_d_restrict
     before delete on payment
 begin
-    raise_application_error (payment_constant_pack.e_invalid_operation_code, payment_constant_pack.e_invalid_operation_message);
+    payment_api_pack.check_delete_rigths;
 end payment_b_iu_tech_fields;
