@@ -68,8 +68,7 @@ Return:
 Note:
 Fix:
 ==============================================================================*/
-procedure check_dml_rigths;
-
+procedure check_iu_possibility;
 
 /*==============================================================================
 Purpose: Проверка прав на D в payment.
@@ -79,6 +78,17 @@ Return:
 Note:
 Fix:
 ==============================================================================*/
-procedure check_delete_rigths;
+procedure check_d_possibility;
+
+/*==============================================================================
+Purpose: Блокировка платежа для изменений.
+Autor: Shatalin A.A.
+Parameter:
+Return:
+Note:
+Fix:
+==============================================================================*/
+procedure try_lock_payment
+    (p_payment_id in payment.payment_id%type);
 
 end payment_api_pack;

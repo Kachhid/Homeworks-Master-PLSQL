@@ -99,6 +99,7 @@ begin
                 dbms_output.put_line ('=============NOT PASSED=============');
             end if;
     end loop;
+    rollback;
 end;
 /
 
@@ -127,13 +128,19 @@ declare
 
         t_unit_test_input_rec
             (result => 0,
-            error_code => -20002,
+            error_code => -20008,
             payment_id => 22,
             reason => 'Недостаточно средств.'),
 
         t_unit_test_input_rec
+            (result => 0,
+            error_code => -20009,
+            payment_id => -1,
+            reason => 'Недостаточно средств.'),
+
+        t_unit_test_input_rec
             (result => 1,
-            payment_id => 52,
+            payment_id => 21,
             reason => 'Недостаточно средств.')
         );
 
@@ -152,13 +159,15 @@ begin
                 v_result := 0;
                 v_error_code := sqlcode;
                 dbms_output.put_line ('exception => ' || sqlerrm);
-    end;
+        end;
+
         if v_result = v_input(i).result and v_error_code = v_input(i).error_code then
             dbms_output.put_line ('===============PASSED===============');
         else
             dbms_output.put_line ('=============NOT PASSED=============');
         end if;
     end loop;
+    rollback;
 end;
 /
 
@@ -187,8 +196,14 @@ declare
 
         t_unit_test_input_rec
             (result => 0,
-            error_code => -20002,
+            error_code => -20008,
             payment_id => 22,
+            reason => 'Недостаточно средств.'),
+
+        t_unit_test_input_rec
+            (result => 0,
+            error_code => -20009,
+            payment_id => -1,
             reason => 'Недостаточно средств.'),
 
         t_unit_test_input_rec
@@ -228,6 +243,7 @@ begin
             dbms_output.put_line ('=============NOT PASSED=============');
         end if;
     end loop;
+    rollback;
 end;
 /
 
@@ -243,12 +259,12 @@ declare
 
         t_unit_test_input_rec
             (result => 0,
-            error_code => -20002,
+            error_code => -20008,
             payment_id => 22),
 
         t_unit_test_input_rec
             (result => 1,
-            payment_id => 52)
+            payment_id => 53)
     );
 
     v_result number(1);
@@ -273,6 +289,7 @@ begin
             dbms_output.put_line ('=============NOT PASSED=============');
         end if;
     end loop;
+    rollback;
 end;
 /
 
@@ -303,8 +320,18 @@ declare
             payment_detail_array => null),
 
         t_unit_test_input_rec
+            (result => 0,
+            error_code => -20008,
+            payment_id => 22,
+            payment_detail_array => t_payment_detail_array
+                (t_payment_detail (field_id => 1, field_value => 'Android'),
+                t_payment_detail (field_id => 2, field_value => '8.8.8.8'),
+                t_payment_detail (field_id => 3, field_value => 'Премия за работу.'),
+                t_payment_detail (field_id => 4, field_value => 'Yes'))),
+
+        t_unit_test_input_rec
             (result => 1,
-            payment_id => 52,
+            payment_id => 53,
             payment_detail_array => t_payment_detail_array
                 (t_payment_detail (field_id => 1, field_value => 'Android'),
                 t_payment_detail (field_id => 2, field_value => '8.8.8.8'),
@@ -334,6 +361,7 @@ begin
             dbms_output.put_line ('=============NOT PASSED=============');
         end if;
     end loop;
+    rollback;
 end;
 /
 
@@ -359,6 +387,12 @@ declare
             error_code => -20003,
             payment_id => 23,
             payment_detail_field_ids => t_number_array ()),
+
+        t_unit_test_input_rec
+            (result => 0,
+            error_code => -20008,
+            payment_id => 22,
+            payment_detail_field_ids => t_number_array (1, 2)),
 
         t_unit_test_input_rec
             (result => 1,
@@ -451,6 +485,7 @@ begin
             dbms_output.put_line ('=============NOT PASSED=============');
         end if;
     end loop;
+    rollback;
 end;
 /
 
@@ -517,6 +552,55 @@ begin
         exception
             when others then
                 common_pack.disable_manual_changes;
+                v_result := 0;
+                v_error_code := sqlcode;
+                dbms_output.put_line ('exception => ' || sqlerrm);
+    end;
+        if v_result = v_input(i).result and v_error_code = v_input(i).error_code then
+            dbms_output.put_line ('===============PASSED===============');
+        else
+            dbms_output.put_line ('=============NOT PASSED=============');
+        end if;
+    end loop;
+    rollback;
+end;
+/
+
+/*==============================================================================
+Тест: блокировка payment
+==============================================================================*/
+declare
+    type t_input is table of t_unit_test_input_rec;
+    v_input t_input := t_input (
+
+        t_unit_test_input_rec
+            (result => 0,
+            error_code => -20009,
+            payment_id => 21)
+
+    );
+
+    v_result number(1);
+    v_error_code number(5);
+
+    procedure test_lock_payment_row
+        (p_payment_id payment.payment_id%type)
+    is
+        pragma autonomous_transaction;
+    begin
+        payment_api_pack.successful_finish_payment (p_payment_id => p_payment_id);
+    end test_lock_payment_row;
+begin
+    for i in 1 .. v_input.count()
+    loop
+        dbms_output.put_line ('Case ' || to_char (i) || ':');
+        v_result := 1;
+        v_error_code := 0;
+        begin
+            payment_api_pack.successful_finish_payment (p_payment_id => v_input(i).payment_id);
+            test_lock_payment_row (p_payment_id => v_input(i).payment_id);
+        exception
+            when others then
                 v_result := 0;
                 v_error_code := sqlcode;
                 dbms_output.put_line ('exception => ' || sqlerrm);
