@@ -28,11 +28,6 @@ is
     e_invalid_input_parameter_message constant varchar2 (200 char) := 'Недопустимый входной параметр.';
     pragma exception_init (e_invalid_input_parameter, e_invalid_input_parameter_code);
 
-    e_invalid_payment_status exception;
-    e_invalid_payment_status_code constant number (5) := -20002;
-    e_invalid_payment_status_message constant varchar2 (200 char) := 'Недопустимый текущий статус платежа (не "Создан")';
-    pragma exception_init (e_invalid_payment_status, e_invalid_payment_status_code);
-
     e_invalid_collection exception;
     e_invalid_collection_code constant number (5) := -20003;
     e_invalid_collection_message constant varchar2 (200 char) := 'Коллекция не инициализирована или содержит данных.';
@@ -57,6 +52,24 @@ is
     e_invalid_operation_api_code constant number (5) := -20007;
     e_invalid_operation_api_message constant varchar2 (200 char) := 'Данная операция запрещена (используйте API).';
     pragma exception_init (e_invalid_operation_api, e_invalid_operation_api_code);
+
+    e_inactive_object exception;
+    e_inactive_object_code constant number (5) := -20008;
+    e_inactive_object_message constant varchar2 (200 char) := 'Объект в конечном статусе. Изменения невозможны.';
+    pragma exception_init (e_inactive_object, e_inactive_object_code);
+
+    e_object_notfound exception;
+    e_object_notfound_code constant number (5) := -20009;
+    e_object_notfound_message constant varchar2 (200 char) := 'Объект не найден.';
+    pragma exception_init (e_object_notfound, e_object_notfound_code);
+
+    e_object_already_locked exception;
+    e_object_already_locked_code constant number (5) := -20009;
+    e_object_already_locked_message constant varchar2 (200 char) := 'Объект уже заблокирован.';
+    pragma exception_init (e_object_already_locked, e_object_already_locked_code);
+
+    e_row_locked exception;
+    pragma exception_init (e_row_locked, -00054);
 
     e_other exception;
     e_other_code constant number (5) := -20100;

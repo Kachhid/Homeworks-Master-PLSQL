@@ -54,7 +54,9 @@ begin
         end loop;
     end if;
 
+    payment_api_pack.try_lock_payment (p_payment_id => p_payment_id);
     allow_changes;
+
     merge into payment_detail pd
     using
         (select
@@ -77,6 +79,7 @@ begin
             (t.payment_id,
             t.field_id,
             t.field_value);
+
     disallow_changes;
 exception
     when common_pack.e_invalid_input_parameter then
@@ -89,7 +92,7 @@ exception
         raise_application_error (common_pack.e_invalid_collection_field_value_code, common_pack.e_invalid_collection_field_value_message);
     when others then
         disallow_changes;
-        raise_application_error (common_pack.e_other_code, common_pack.e_other_message);
+        raise;
 end insert_or_update_payment_detail;
 
 procedure delete_payment_detail
@@ -105,13 +108,16 @@ begin
         raise common_pack.e_invalid_collection;
     end if;
 
+    payment_api_pack.try_lock_payment (p_payment_id => p_payment_id);
     allow_changes;
+
     delete from payment_detail pd
     where
         pd.payment_id = p_payment_id
         and pd.field_id in
             (select t.column_value as field_id
             from table (p_payment_detail_field_ids) t);
+
     disallow_changes;
 exception
     when common_pack.e_invalid_input_parameter then
@@ -120,15 +126,15 @@ exception
         raise_application_error (common_pack.e_invalid_collection_code, common_pack.e_invalid_collection_message);
     when others then
         allow_changes;
-        raise_application_error (common_pack.e_other_code, common_pack.e_other_message);
+        raise;
 end delete_payment_detail;
 
-procedure check_dml_rigths
+procedure check_iud_possibility
 is
 begin
     if not g_is_api and not common_pack.is_manual_changes_allowed then
         raise_application_error (common_pack.e_invalid_operation_api_code, common_pack.e_invalid_operation_api_message);
     end if;
-end check_dml_rigths;
+end check_iud_possibility;
 
 end payment_detail_api_pack;
