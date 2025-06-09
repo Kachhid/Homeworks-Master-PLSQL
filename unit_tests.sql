@@ -394,7 +394,6 @@ end;
 /*==============================================================================
 Тест: payment&payment_detail triggers
 ==============================================================================*/
-
 declare
     type t_input is table of t_unit_test_input_rec;
     v_input t_input := t_input (
@@ -453,3 +452,80 @@ begin
         end if;
     end loop;
 end;
+/
+
+/*==============================================================================
+Тест: прямые IUD в payment и payment_detail
+==============================================================================*/
+declare
+    type t_input is table of t_unit_test_input_rec;
+    v_input t_input := t_input (
+
+        t_unit_test_input_rec
+            (result => 1,
+            sql_code =>
+'insert into payment
+    (payment_id,
+    create_dtime,
+    summa,
+    currency_id,
+    from_client_id,
+    to_client_id,
+    status)
+values
+    (-1,
+    systimestamp,
+    10,
+    643,
+    1,
+    2,
+    0)'),
+
+        t_unit_test_input_rec
+            (result => 1,
+            sql_code => 'update payment set payment_id = payment_id where rownum = 1'),
+
+        t_unit_test_input_rec
+            (result => 1,
+            sql_code => 'delete from payment where rownum = 1'),
+
+        t_unit_test_input_rec
+            (result => 1,
+            sql_code => q'[insert into payment_detail (payment_id, field_id, field_value) values (3, 3, 'Test')]'),
+
+        t_unit_test_input_rec
+            (result => 1,
+            sql_code => 'update payment_detail set payment_id = payment_id where rownum = 1'),
+
+        t_unit_test_input_rec
+            (result => 1,
+            sql_code => 'delete from payment_detail where rownum = 1')
+    );
+
+    v_result number(1);
+    v_error_code number(5);
+begin
+    for i in 1 .. v_input.count()
+    loop
+        dbms_output.put_line ('Case ' || to_char (i) || ':');
+        v_result := 1;
+        v_error_code := 0;
+        begin
+            common_pack.enable_manual_changes;
+            execute immediate v_input(i).sql_code;
+            common_pack.disable_manual_changes;
+        exception
+            when others then
+                common_pack.disable_manual_changes;
+                v_result := 0;
+                v_error_code := sqlcode;
+                dbms_output.put_line ('exception => ' || sqlerrm);
+    end;
+        if v_result = v_input(i).result and v_error_code = v_input(i).error_code then
+            dbms_output.put_line ('===============PASSED===============');
+        else
+            dbms_output.put_line ('=============NOT PASSED=============');
+        end if;
+    end loop;
+end;
+/

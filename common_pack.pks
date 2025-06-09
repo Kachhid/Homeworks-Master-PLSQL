@@ -1,4 +1,4 @@
-﻿create or replace package payment_constant_pack
+﻿create or replace package common_pack
 /*==============================================================================
 Purpose: Константы для сущностей “Платеж” и “Детали платежа”
 Autor: Shatalin A.A.
@@ -62,4 +62,34 @@ is
     e_other_code constant number (5) := -20100;
     e_other_message constant varchar2 (200 char) := 'Непредвиденная ошибка.';
 
-end payment_constant_pack;
+/*==============================================================================
+Purpose: Разрешение изменений (IUD)
+Autor: Shatalin A.A.
+Parameter:
+Return:
+Note: Для прямых изменений в payment и payment_detail.
+Fix:
+==============================================================================*/
+procedure enable_manual_changes;
+
+/*==============================================================================
+Purpose: Запрет изменений (IUD)
+Autor: Shatalin A.A.
+Parameter:
+Return:
+Note: Для прямых изменений в payment и payment_detail.
+Fix:
+==============================================================================*/
+procedure disable_manual_changes;
+
+/*==============================================================================
+Purpose: Проверка возможности изменений (IUD)
+Autor: Shatalin A.A.
+Parameter:
+Return:
+Note: Для прямых изменений в payment и payment_detail.
+Fix:
+==============================================================================*/
+function is_manual_changes_allowed return boolean;
+
+end common_pack;
