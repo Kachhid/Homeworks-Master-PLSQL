@@ -48,6 +48,7 @@ begin
     end if;
 
     allow_changes;
+
     insert into payment
         (payment_id,
         create_dtime,
@@ -65,6 +66,7 @@ begin
         p_payment.to_client_id,
         common_pack.c_status_create.status)
     returning payment_id into v_payment_id;
+
     disallow_changes;
 
     payment_detail_api_pack.insert_or_update_payment_detail
@@ -83,7 +85,7 @@ exception
         raise_application_error (common_pack.e_invalid_collection_field_value_code, common_pack.e_invalid_collection_field_value_message);
     when others then
         disallow_changes;
-        raise_application_error (common_pack.e_other_code, common_pack.e_other_message);
+        raise;
 end create_payment;
 
 procedure fail_payment
@@ -98,27 +100,22 @@ begin
         raise common_pack.e_invalid_input_parameter;
     end if;
 
+    try_lock_payment (p_payment_id => p_payment_id);
     allow_changes;
+
     update payment p
     set
         p.status = common_pack.c_status_error.status,
         p.status_change_reason = p_reason
-    where
-        p.payment_id = p_payment_id
-        and p.status = common_pack.c_status_create.status;
-    disallow_changes;
+    where p.payment_id = p_payment_id;
 
-    if sql%rowcount = 0 then
-        raise common_pack.e_invalid_payment_status;
-    end if;
+    disallow_changes;
 exception
     when common_pack.e_invalid_input_parameter then
         raise_application_error (common_pack.e_invalid_input_parameter_code, common_pack.e_invalid_input_parameter_message);
-    when common_pack.e_invalid_payment_status then
-        raise_application_error (common_pack.e_invalid_payment_status_code, common_pack.e_invalid_payment_status_message);
     when others then
         disallow_changes;
-        raise_application_error (common_pack.e_other_code, common_pack.e_other_message);
+        raise;
 end fail_payment;
 
 procedure cancel_payment
@@ -133,27 +130,22 @@ begin
         raise common_pack.e_invalid_input_parameter;
     end if;
 
+    try_lock_payment (p_payment_id => p_payment_id);
     allow_changes;
+
     update payment p
     set
         p.status = common_pack.c_status_cancel.status,
         p.status_change_reason = p_reason
-    where
-        p.payment_id = p_payment_id
-        and p.status = common_pack.c_status_create.status;
-    disallow_changes;
+    where p.payment_id = p_payment_id;
 
-    if sql%rowcount = 0 then
-        raise common_pack.e_invalid_payment_status;
-    end if;
+    disallow_changes;
 exception
     when common_pack.e_invalid_input_parameter then
         raise_application_error (common_pack.e_invalid_input_parameter_code, common_pack.e_invalid_input_parameter_message);
-    when common_pack.e_invalid_payment_status then
-        raise_application_error (common_pack.e_invalid_payment_status_code, common_pack.e_invalid_payment_status_message);
     when others then
         disallow_changes;
-        raise_application_error (common_pack.e_other_code, common_pack.e_other_message);
+        raise;
 end cancel_payment;
 
 procedure successful_finish_payment
@@ -164,43 +156,61 @@ begin
         raise common_pack.e_invalid_input_parameter;
     end if;
 
+    try_lock_payment (p_payment_id => p_payment_id);
     allow_changes;
+
     update payment p
     set
         p.status = common_pack.c_status_success.status,
         p.status_change_reason = null
-    where
-        p.payment_id = p_payment_id
-        and p.status = common_pack.c_status_create.status;
-    disallow_changes;
+    where p.payment_id = p_payment_id;
 
-    if sql%rowcount = 0 then
-        raise common_pack.e_invalid_payment_status;
-    end if;
+    disallow_changes;
 exception
     when common_pack.e_invalid_input_parameter then
         raise_application_error (common_pack.e_invalid_input_parameter_code, common_pack.e_invalid_input_parameter_message);
-    when common_pack.e_invalid_payment_status then
-        raise_application_error (common_pack.e_invalid_payment_status_code, common_pack.e_invalid_payment_status_message);
     when others then
         disallow_changes;
-        raise_application_error (common_pack.e_other_code, common_pack.e_other_message);
+        raise;
 end successful_finish_payment;
 
-procedure check_dml_rigths
+procedure check_iu_possibility
 is
 begin
     if not g_is_api and not common_pack.is_manual_changes_allowed then
         raise_application_error (common_pack.e_invalid_operation_api_code, common_pack.e_invalid_operation_api_message);
     end if;
-end check_dml_rigths;
+end check_iu_possibility;
 
-procedure check_delete_rigths
+procedure check_d_possibility
 is
 begin
     if not common_pack.is_manual_changes_allowed then
         raise_application_error (common_pack.e_invalid_operation_code, common_pack.e_invalid_operation_message);
     end if;
-end check_delete_rigths;
+end check_d_possibility;
+
+procedure try_lock_payment
+    (p_payment_id in payment.payment_id%type)
+is
+    v_status payment.status%type;
+begin
+    select status
+    into v_status
+    from payment
+    where payment_id = p_payment_id
+    for update nowait;
+
+    if v_status != common_pack.c_status_create.status then
+        raise common_pack.e_inactive_object;
+    end if;
+exception
+    when no_data_found then
+        raise_application_error (common_pack.e_object_notfound_code, common_pack.e_object_notfound_message);
+    when common_pack.e_row_locked then
+        raise_application_error (common_pack.e_object_already_locked_code, common_pack.e_object_already_locked_message);
+    when common_pack.e_inactive_object then
+        raise_application_error (common_pack.e_inactive_object_code, common_pack.e_inactive_object_message);
+end try_lock_payment;
 
 end payment_api_pack;
